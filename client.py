@@ -83,8 +83,8 @@ class LogThread(QThread):
         super().__init__()
         self._run_flag = True
         # 주소가 /logs 로 끝나도록 설정
-        if url.endswith("/"): self.url = url + "logs"
-        else: self.url = url + "/logs"
+        if url.endswith("/"): self.url = url + "log"
+        else: self.url = url + "/log"
 
     def run(self):
         try:

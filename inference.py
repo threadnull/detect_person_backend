@@ -72,6 +72,10 @@ class Detector:
         self.cap = None
         self.log_queue = queue.Queue()
 
+        # 로그 관련 변수 초기화 (util.py 로직)
+        self.last_log_time = None
+        self.log_deduplication_interval = datetime.timedelta(seconds=LOG_INTERVAL)
+        
         self._load_model()
         self._load_calibration()
         self._init_camera()
@@ -162,7 +166,7 @@ class Detector:
 
                 log_distances = [item['dist'] for item in processed_boxes if item.get('dist') and item['dist'] != "Calc..."]
                 if log_distances:
-                    current_time = datetime.datetime.now().strftime("%H:%M:%S")
+                    current_time = datetime.datetime.now()
                     
                     # 마지막 로그 시간과 비교하여 일정 시간 지났는지 확인
                     if self.last_log_time is None or (current_time - self.last_log_time) > self.log_deduplication_interval:

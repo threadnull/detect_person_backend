@@ -61,7 +61,7 @@ def get_log():
     def iter_log():
         while True:
             # 큐가 비어있지 않으면 메시지 꺼내기
-            if not detector.log_queue.empty*():
+            if not detector.log_queue.empty():
                 msg = detector.log_queue.get()
                 # 텍스트 라인 단위
                 yield f"data: {msg}\n"
