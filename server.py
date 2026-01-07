@@ -64,7 +64,7 @@ def get_log():
             if not detector.log_queue.empty():
                 msg = detector.log_queue.get()
                 # 텍스트 라인 단위
-                yield f"data: {msg}\n"
+                yield f"{msg}\n"
 
             else:
                 # cpu 과점유 방지

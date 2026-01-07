@@ -110,7 +110,7 @@ class ClientWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         if not os.path.exists(UI_PATH):
-            print(f"오류: UI 파일을 다음 경로에서 찾을 수 없습니다 '{UI_PATH}'")
+            print(f"오류: UI 파일을 다음 경로에서 찾을 수 없습니다. '{UI_PATH}'")
             sys.exit(1)
 
         uic.loadUi(UI_PATH, self)
@@ -159,7 +159,7 @@ class ClientWindow(QMainWindow):
         if ":" not in url.split('://')[1]:
             url += ":8000"
             
-        self.log_output.appendPlainText(f"{url}에 연결 중...")
+        self.log_output.appendPlainText(f"{url}에 연결")
 
         # 비디오 스레드
         self.thread = VideoThread(url)
@@ -179,7 +179,7 @@ class ClientWindow(QMainWindow):
 
     # 연결 해제
     def disconnect_from_backend(self):
-        self.log_output.appendPlainText("연결을 끊는 중...")
+        self.log_output.appendPlainText("연결 해제")
         # 비디오 중지
         if self.thread and self.thread.isRunning():
             self.thread.stop()
@@ -258,7 +258,7 @@ class ClientWindow(QMainWindow):
     
     # 윈도우 닫기
     def closeEvent(self, event):
-        print("윈도우를 닫습니다...")
+        print("윈도우를 닫습니다")
         self.disconnect_from_backend()
         event.accept()
 
