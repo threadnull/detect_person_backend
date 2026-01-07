@@ -69,36 +69,138 @@
      </widget>
     </item>
     <item>
-     <widget class="QPlainTextEdit" name="log_output">
-      <property name="sizePolicy">
-       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-        <horstretch>1</horstretch>
-        <verstretch>0</verstretch>
-       </sizepolicy>
-      </property>
-      <property name="minimumSize">
-       <size>
-        <width>200</width>
-        <height>480</height>
-       </size>
-      </property>
-      <property name="styleSheet">
-       <string notr="true">
-        background-color: black;
-        color: #00FF00;
-        font-family: Consolas, Monospace;
-        font-size: 12px;
-        border: 1px solid #555;
-        border-radius: 5px;
-       </string>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="plainText">
-       <string>System Ready...</string>
-      </property>
-     </widget>
+     <layout class="QVBoxLayout" name="verticalLayout">
+      <item>
+       <widget class="QGroupBox" name="controlGroup">
+        <property name="styleSheet">
+         <string notr="true">
+          QGroupBox {
+              border: 1px solid #555;
+              border-radius: 5px;
+              margin-top: 1ex;
+              font-family: Consolas, Monospace;
+              color: white;
+          }
+          QGroupBox::title {
+              subcontrol-origin: margin;
+              subcontrol-position: top center;
+              padding: 0 3px;
+          }
+         </string>
+        </property>
+        <property name="title">
+         <string>Connection</string>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="styleSheet">
+            <string notr="true">
+             color: white;
+             font-family: Consolas, Monospace;
+            </string>
+           </property>
+           <property name="text">
+            <string>Backend URL</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLineEdit" name="backend_url_input">
+           <property name="styleSheet">
+            <string notr="true">
+             background-color: #555;
+             color: white;
+             border: 1px solid #777;
+             border-radius: 3px;
+             padding: 2px;
+             font-family: Consolas, Monospace;
+            </string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout">
+           <item>
+            <widget class="QPushButton" name="connect_button">
+             <property name="styleSheet">
+              <string notr="true">
+               QPushButton {
+                   background-color: #4CAF50;
+                   color: white;
+                   border-radius: 3px;
+                   padding: 5px;
+                   font-family: Consolas, Monospace;
+               }
+               QPushButton:hover {
+                   background-color: #45a049;
+               }
+              </string>
+             </property>
+             <property name="text">
+              <string>Connect</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="disconnect_button">
+             <property name="styleSheet">
+              <string notr="true">
+               QPushButton {
+                   background-color: #f44336;
+                   color: white;
+                   border-radius: 3px;
+                   padding: 5px;
+                   font-family: Consolas, Monospace;
+               }
+               QPushButton:hover {
+                   background-color: #da190b;
+               }
+              </string>
+             </property>
+             <property name="text">
+              <string>Disconnect</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPlainTextEdit" name="log_output">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>1</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize">
+         <size>
+          <width>200</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">
+          background-color: black;
+          color: #00FF00;
+          font-family: Consolas, Monospace;
+          font-size: 12px;
+          border: 1px solid #555;
+          border-radius: 5px;
+         </string>
+        </property>
+        <property name="readOnly">
+         <bool>true</bool>
+        </property>
+        <property name="plainText">
+         <string>System Ready...</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
