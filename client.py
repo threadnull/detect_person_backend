@@ -75,6 +75,36 @@ class VideoThread(QThread):
         self._run_flag = False
         self.wait()
 
+# 로그 스레드
+class LogThread(QThread):
+    log_signal = pyqtSignal(str)
+    
+    def __init__(self, url):
+        super().__init__()
+        self._run_flag = True
+        # 주소가 /logs 로 끝나도록 설정
+        if url.endswith("/"): self.url = url + "logs"
+        else: self.url = url + "/logs"
+
+    def run(self):
+        try:
+            # stream=True로 텍스트 라인을 계속 읽음
+            with requests.get(self.url, stream=True, timeout=5) as r:
+                if r.status_code == 200:
+                    # iter_lines()는 한 줄씩 데이터를 읽어옴
+                    for line in r.iter_lines():
+                        if not self._run_flag: break
+                        if line:
+                            decoded_line = line.decode('utf-8')
+                            self.log_signal.emit(decoded_line)
+        except Exception as e:
+            # 로그 연결 실패는 치명적이지 않으므로 콘솔에만 찍거나 무시 가능
+            print(f"Log connection error: {e}")
+
+    def stop(self):
+        self._run_flag = False
+        self.wait()
+
 # GUI 출력
 class ClientWindow(QMainWindow):
     def __init__(self):
@@ -90,6 +120,7 @@ class ClientWindow(QMainWindow):
         self.showMaximized()
 
         self.thread = None
+        self.log_thread = None
 
         # 요소들이 존재하는지 확인
         if hasattr(self, "log_output"):
@@ -130,12 +161,17 @@ class ClientWindow(QMainWindow):
             
         self.log_output.appendPlainText(f"{url}에 연결 중...")
 
-        # 비디오 스레드 생성
+        # 비디오 스레드
         self.thread = VideoThread(url)
         self.thread.change_pixmap_signal.connect(self.update_image)
         self.thread.connection_failed.connect(self.on_connection_failed)
         self.thread.finished.connect(self.on_thread_finished)
         self.thread.start()
+
+        # 로그 스레드
+        self.log_thread = LogThread(url)
+        self.log_thread.log_signal.connect(self.update_log)
+        self.log_thread.start()
 
         # 버튼 활성화/비활성화 상태 변경
         self.connect_button.setEnabled(False)
@@ -144,12 +180,17 @@ class ClientWindow(QMainWindow):
     # 연결 해제
     def disconnect_from_backend(self):
         self.log_output.appendPlainText("연결을 끊는 중...")
-        # 쓰레드가 존재하고 실행 중이면 정지
+        # 비디오 중지
         if self.thread and self.thread.isRunning():
             self.thread.stop()
             self.thread = None
 
-        # 버튼 활성화/비활성화 상태 변경
+        # 로그 중지
+        if self.log_thread:
+            self.log_thread.stop()
+            self.log_thread = None
+
+        # 버튼 활성화/비활성화
         self.connect_button.setEnabled(True)
         self.disconnect_button.setEnabled(False)
 
@@ -165,29 +206,25 @@ class ClientWindow(QMainWindow):
         self.disconnect_button.setEnabled(False)
 
     # 쓰레드 종료 시그널
+    # def on_thread_finished(self):
+    #     self.log_output.appendPlainText("연결이 끊어졌습니다.")
+    #     self.connect_button.setEnabled(True)
+    #     self.disconnect_button.setEnabled(False)
+
+    #     if self.thread:
+    #         try: self.thread.change_pixmap_signal.disconnect(self.update_image)
+    #         except TypeError: pass
+    #         try: self.thread.connection_failed.disconnect(self.on_connection_failed)
+    #         except TypeError: pass
+    #         try: self.thread.finished.disconnect(self.on_thread_finished)
+    #         except TypeError: pass
+    #         self.thread = None
+
+    #     if hasattr(self, "video_display"):
+    #         self.video_display.clear()
+    #         self.video_display.setText("비디오 영역")
     def on_thread_finished(self):
-        self.log_output.appendPlainText("연결이 끊어졌습니다.")
-        self.connect_button.setEnabled(True)
-        self.disconnect_button.setEnabled(False)
-
-        if self.thread:
-            try: self.thread.change_pixmap_signal.disconnect(self.update_image)
-            except TypeError: pass
-            try: self.thread.connection_failed.disconnect(self.on_connection_failed)
-            except TypeError: pass
-            try: self.thread.finished.disconnect(self.on_thread_finished)
-            except TypeError: pass
-            self.thread = None
-
-        if hasattr(self, "video_display"):
-            self.video_display.clear()
-            self.video_display.setText("비디오 영역")
-
-    # 윈도우 닫기
-    def closeEvent(self, event):
-        print("윈도우를 닫습니다...")
-        self.disconnect_from_backend()
-        event.accept()
+        pass
 
     # 이미지 업데이트
     def update_image(self, cv_img):
@@ -201,6 +238,11 @@ class ClientWindow(QMainWindow):
             )
             self.video_display.setPixmap(pixmap)
 
+    # 로그 업데이트
+    def update_log(self, msg):
+        if hasattr(self, "log_output"):
+            self.log_output.appendPlainText(msg)
+
     # cv -> qpixmap
     def convert_cv_qt(self, cv_img):
         rgb_image = cv2.cvtColor(cv_img, cv2.COLOR_BGR2RGB)
@@ -213,6 +255,12 @@ class ClientWindow(QMainWindow):
         )
         # qimage -> qpixmap
         return QtGui.QPixmap.fromImage(convert_to_Qt_format)
+    
+    # 윈도우 닫기
+    def closeEvent(self, event):
+        print("윈도우를 닫습니다...")
+        self.disconnect_from_backend()
+        event.accept()
 
 # 엔트리 포인트
 if __name__ == "__main__":

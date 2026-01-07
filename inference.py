@@ -2,6 +2,8 @@ import os
 import traceback
 import cv2
 import numpy as np
+import queue
+import datetime
 from rknnlite.api import RKNNLite
 
 # 하이퍼 파라미터
@@ -16,6 +18,7 @@ CALIB_PATH = "./calib/stereo_calib.npz"
 COLOR_BOX = (0, 255, 0)
 COLOR_TEXT = (0, 255, 0)
 COLOR_MASK = (0, 0, 255)
+LOG_INTERVAL = 2
 
 MASK_POINTS = [
     [0, 0],
@@ -67,6 +70,8 @@ class Detector:
     def __init__(self):
         self.rknn_lite = RKNNLite()
         self.cap = None
+        self.log_queue = queue.Queue()
+
         self._load_model()
         self._load_calibration()
         self._init_camera()
@@ -145,23 +150,37 @@ class Detector:
     # 비디오 프레임 생성
     def generate_video_frame(self):
         if not self.cap or not self.cap.isOpened():
-            print("Error: Camera not initialized or opened.")
             return
 
         while True:
             ret, frame = self.cap.read()
             if not ret:
-                print("Warning: Failed to grab frame.")
                 break
 
             try:
                 imgL_rect, processed_boxes = self._process_frame(frame)
-                self._draw_results(imgL_rect, processed_boxes, self.half_width, self.raw_height)
 
+                log_distances = [item['dist'] for item in processed_boxes if item.get('dist') and item['dist'] != "Calc..."]
+                if log_distances:
+                    current_time = datetime.datetime.now().strftime("%H:%M:%S")
+                    
+                    # 마지막 로그 시간과 비교하여 일정 시간 지났는지 확인
+                    if self.last_log_time is None or (current_time - self.last_log_time) > self.log_deduplication_interval:
+                        time_str = current_time.strftime("%H:%M:%S")
+                        dist_msg = ", ".join(log_distances)
+                        full_msg = f"[{time_str}] Person Detected: {dist_msg}"
+
+                        # 큐에 로그 저장 (서버가 가져갈 수 있도록)
+                        if self.log_queue.qsize() < 10: # 큐가 너무 쌓이지 않게 관리
+                            self.log_queue.put(full_msg)
+                        
+                        self.last_log_time = current_time
+
+                self._draw_results(imgL_rect, processed_boxes, self.half_width, self.raw_height)
                 _, jpeg = cv2.imencode('.jpg', imgL_rect)
-                frame_bytes = jpeg.tobytes()
-                yield (b'--frame\r\n'
-                       b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+                yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n')
+                
             except Exception as e:
                 print(f"Error in video generator loop: {e}")
                 traceback.print_exc()
