@@ -1,1 +1,1 @@
-pyinstaller -D --clean --icon="icon\aperture.ico" client.py
+pyinstaller -F -w --clean --icon="icon\aperture.ico" client.py
