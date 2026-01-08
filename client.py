@@ -170,6 +170,7 @@ class ClientWindow(QMainWindow):
 
         # 로그 스레드
         self.log_thread = LogThread(url)
+        print("log_thread init")
         self.log_thread.log_signal.connect(self.update_log)
         self.log_thread.start()
 
@@ -242,6 +243,7 @@ class ClientWindow(QMainWindow):
     def update_log(self, msg):
         if hasattr(self, "log_output"):
             self.log_output.appendPlainText(msg)
+            print("log update")
 
     # cv -> qpixmap
     def convert_cv_qt(self, cv_img):

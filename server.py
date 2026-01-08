@@ -9,7 +9,7 @@ from inference import Detector
 
 detector: Optional[Detector] = None
 
-# 리소스 관리
+# 리소스
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     global detector
@@ -34,6 +34,7 @@ app = FastAPI(lifespan=lifespan)
 def favicon():
     return Response(status_code=204)
 
+# 비디오 스트리밍 엔드포인트
 @app.get("/")
 def video_feed():
     """
@@ -49,6 +50,7 @@ def video_feed():
         media_type="multipart/x-mixed-replace; boundary=frame"
     )
 
+# 로그 스트리밍 엔드포인트
 @app.get("/log")
 def get_log():
     """
@@ -56,17 +58,23 @@ def get_log():
     Detector의 큐를 확인하여 텍스트 데이터를 클라이언트에게 전송
     """
     if detector is None:
+        print("Detector is None")
         return Response("Detector not initialized", status_code=500)
     
     def iter_log():
+        print("into 'def iter_log():'")
         while True:
+            print("into 'while True:'")
             # 큐가 비어있지 않으면 메시지 꺼내기
             if not detector.log_queue.empty():
                 msg = detector.log_queue.get()
+                print("into 'if not detector.log_queue.empty():'")
+
                 # 텍스트 라인 단위
                 yield f"{msg}\n"
 
             else:
+                print("into 'else:'")
                 # cpu 과점유 방지
                 time.sleep(0.1)
 
@@ -75,6 +83,7 @@ def get_log():
         media_type="text/plain; charset=utf-8"
     )
 
+# 엔트리 포인트
 if __name__ == "__main__":
     import logging
     # rknnlite 라이브러리가 변경한 로깅 레벨 복원
