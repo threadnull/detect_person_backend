@@ -162,12 +162,10 @@ class Detector:
                 break
 
             try:
-                print("into 'try:'")
                 imgL_rect, processed_boxes = self._process_frame(frame)
 
                 log_distances = [item['dist'] for item in processed_boxes if item.get('dist') and item['dist'] != "Calc..."]
                 if log_distances:
-                    print("into 'if log_distances:'")
                     current_time = datetime.datetime.now()
                     
                     # 마지막 로그 시간과 비교하여 일정 시간 지났는지 확인
@@ -175,13 +173,10 @@ class Detector:
                         time_str = current_time.strftime("%H:%M:%S")
                         dist_msg = ", ".join(log_distances)
                         full_msg = f"[{time_str}] Person Detected: {dist_msg}"
-                        print("into 'if current_time - self.last_log_time > self.log_deduplication_interval:'")
-                        print(f"Log: {full_msg}")
 
                         # 큐에 로그 저장 (서버가 가져갈 수 있도록)
                         if self.log_queue.qsize() < 10: # 큐가 너무 쌓이지 않게 관리
                             self.log_queue.put(full_msg)
-                            print("into 'if self.log_queue.qsize() < 10:'")
             
                         self.last_log_time = current_time
 

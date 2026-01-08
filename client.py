@@ -88,19 +88,15 @@ class LogThread(QThread):
 
     def run(self):
         try:
-            print("into 'def run():")
             # stream=True로 텍스트 라인을 계속 읽음
             with requests.get(self.url, stream=True, timeout=5) as r:
                 if r.status_code == 200:
-                    print("into 'if r.status_code == 200:'")
                     # iter_lines()는 한 줄씩 데이터를 읽어옴
                     for line in r.iter_lines():
                         if not self._run_flag:
-                            print("into 'if not self._run_flag:'")
                             break
 
                         if line:
-                            print("into 'if line:'")
                             decoded_line = line.decode('utf-8')
                             self.log_signal.emit(decoded_line)
 

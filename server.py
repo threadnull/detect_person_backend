@@ -62,19 +62,15 @@ def get_log():
         return Response("Detector not initialized", status_code=500)
     
     def iter_log():
-        print("into 'def iter_log():'")
         while True:
-            print("into 'while True:'")
             # 큐가 비어있지 않으면 메시지 꺼내기
             if not detector.log_queue.empty():
                 msg = detector.log_queue.get()
-                print("into 'if not detector.log_queue.empty():'")
 
                 # 텍스트 라인 단위
                 yield f"{msg}\n"
 
             else:
-                print("into 'else:'")
                 # cpu 과점유 방지
                 time.sleep(0.1)
 
